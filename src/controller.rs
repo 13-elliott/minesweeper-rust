@@ -22,14 +22,28 @@ impl MinesweeperController {
         &self.model
     }
 
+    pub fn can_keep_playing(&self) -> bool {
+        !(self.won() || self.lost())
+    }
+
+    /**
+     * returns true if no mines have exploded, all he all the mines have been flagged,
+     * and no space without a mine has been flagged.
+     */
     pub fn won(&self) -> bool {
-        self.num_correctly_flagged == self.model.num_flagged()
+        !self.lost() && self.num_correctly_flagged == self.model.num_mines()
     }
 
+    /**
+     * returns true if a mine has exploded
+     */
     pub fn lost(&self) -> bool {
-        self.exploded_mine.is_none()
+        self.exploded_mine.is_some()
     }
 
+    /**
+     * TODO
+     */
     pub fn exploded_mine_pos(&self) -> Option<(u32, u32)> {
         self.exploded_mine
     }
@@ -49,12 +63,11 @@ impl MinesweeperController {
      * On success, returns a boolean indicating if a flag was
      * added (true) or removed (false)
      */
-    pub fn toggle_flag_at(&mut self, x: u32, y: u32) -> Result<bool, ()> {
-        let add_flag = match self.model.is_flagged_at(x, y) {
-            // if was not flagged, add a flag (& vice versa)
-            Some(b) => !b,
-            None => return Err(()),
-        };
+    pub fn toggle_flag_at(&mut self, x: u32, y: u32) -> ModelResult<bool> {
+        if self.model.is_revealed_at(x, y).ok_or(OutOfBounds)? {
+            return Err(NoOp);
+        }
+        let add_flag = !self.model.is_flagged_at(x, y).ok_or(OutOfBounds)?;
         // disregard err variants --
         //  OutOfBounds errors should be handled above
         //  and NoOp errors are covered by the fact that
