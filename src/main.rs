@@ -165,14 +165,8 @@ fn draw_board(model: &MinesweeperModel, xray: bool) {
  * given an integer, produces how many digits are needed
  * to represent that number in base-10 (without leading zeros)
  */
-fn num_digits_b10(mut number: u32) -> usize {
-    const BASE: u32 = 10;
-    let mut result = 1;
-    while number >= BASE {
-        result += 1;
-        number %= BASE;
-    }
-    result
+fn num_digits_b10(number: u32) -> usize {
+    (number as f64).log10().floor() as usize + 1
 }
 
 /**
